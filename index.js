@@ -1,5 +1,7 @@
 const express = require('express');
-const port = 4000;
+require('dotenv').config();
+// Load environment variables from .env file
+const port = process.env.PORT || 4000;
 const path = require('path');
 
 // require the mongoose file
@@ -10,6 +12,14 @@ const Dashboard = require('./models/dashboard');
 
 const app = express();
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime() 
+  });
+});
 // path: routes\index.js
 app.get('/', require('./routes'));
 app.get('/dashboard', require('./routes'));
