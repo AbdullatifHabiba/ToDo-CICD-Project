@@ -1,0 +1,137 @@
+---
+- name: Create ArgoCD access script
+  copy:
+    content: |
+      #!/bin/bash
+      echo "🚀 Starting ArgoCD port-forward on port 8080..."
+      echo "==============================================="
+      echo "Access ArgoCD at: https://{{ ansible_host }}:8080"
+      echo "Username: admin"
+      echo "Password: {{ argocd_password.stdout }}"
+      echo ""
+      echo "Note: Accept the self-signed certificate warning in your browser"
+      echo "Press Ctrl+C to stop port forwarding"
+      echo ""
+      k3s kubectl port-forward --address 0.0.0.0 svc/argocd-server -n argocd 8080:443
+    dest: /home/{{ ansible_user }}/argocd-access.sh
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Create Todo App access script
+  copy:
+    content: |
+      #!/bin/bash
+      echo "🌐 Starting Todo App port-forward on port 3000..."
+      echo "==============================================="
+      echo "Access Todo App at: http://{{ ansible_host }}:3000"
+      echo ""
+      echo "Press Ctrl+C to stop port forwarding"
+      echo ""
+      k3s kubectl port-forward --address 0.0.0.0 svc/todo-app-service -n todo-app 3000:80
+    dest: /home/{{ ansible_user }}/todo-app-access.sh
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Create comprehensive kubectl status script
+  copy:
+    content: |
+      #!/bin/bash
+      echo "==================================="
+      echo "    K8s Cluster Management Script"
+      echo "==================================="
+      echo ""
+      
+      echo "📊 CLUSTER STATUS:"
+      echo "==================="
+      echo "Nodes:"
+      k3s kubectl get nodes
+      echo ""
+      
+      echo "All Pods:"
+      k3s kubectl get pods --all-namespaces
+      echo ""
+      
+      echo "🎯 TODO APP STATUS:"
+      echo "==================="
+      echo "Todo App Pods:"
+      k3s kubectl get pods -n todo-app
+      echo ""
+      echo "Todo App Services:"
+      k3s kubectl get svc -n todo-app
+      echo ""
+      echo "Todo App Ingress:"
+      k3s kubectl get ingress -n todo-app 2>/dev/null || echo "No ingress found"
+      echo ""
+      
+      echo "🔍 ARGOCD STATUS:"
+      echo "=================="
+      echo "ArgoCD Pods:"
+      k3s kubectl get pods -n argocd
+      echo ""
+      echo "ArgoCD Applications:"
+      k3s kubectl get applications -n argocd 2>/dev/null || echo "No applications found"
+      echo ""
+      
+      echo "📝 USEFUL COMMANDS:"
+      echo "==================="
+      echo "Check app logs: k3s kubectl logs -f deployment/todo-app -n todo-app"
+      echo "Check MongoDB logs: k3s kubectl logs -f statefulset/mongodb -n todo-app"
+      echo "Check ArgoCD logs: k3s kubectl logs -f deployment/argocd-application-controller -n argocd"
+      echo "Restart todo-app: k3s kubectl rollout restart deployment/todo-app -n todo-app"
+      echo "Scale todo-app: k3s kubectl scale deployment/todo-app --replicas=3 -n todo-app"
+      echo ""
+      echo "🌐 ACCESS APPLICATIONS:"
+      echo "======================="
+      echo "Run './argocd-access.sh' for ArgoCD UI access"
+      echo "Run './todo-app-access.sh' for Todo App access"
+    dest: /home/{{ ansible_user }}/k8s-status.sh
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Create troubleshooting script
+  copy:
+    content: |
+      #!/bin/bash
+      echo "🚨 TROUBLESHOOTING SCRIPT"
+      echo "========================="
+      echo ""
+      
+      echo "1. Checking failing pods..."
+      k3s kubectl get pods --all-namespaces | grep -E "(Error|CrashLoopBackOff|ImagePullBackOff|Pending)" || echo "No failing pods found"
+      echo ""
+      
+      echo "2. Checking resource usage..."
+      k3s kubectl top nodes 2>/dev/null || echo "Metrics server not available"
+      k3s kubectl top pods --all-namespaces 2>/dev/null || echo "Pod metrics not available"
+      echo ""
+      
+      echo "3. Checking persistent volumes..."
+      k3s kubectl get pv,pvc --all-namespaces
+      echo ""
+      
+      echo "4. Recent events (last 20)..."
+      k3s kubectl get events --all-namespaces --sort-by='.lastTimestamp' | tail -20
+      echo ""
+      
+      echo "5. ArgoCD Application Health..."
+      k3s kubectl get application todo-app -n argocd -o jsonpath='{.status.health.status}' 2>/dev/null || echo "ArgoCD app not found"
+      echo ""
+      k3s kubectl get application todo-app -n argocd -o jsonpath='{.status.sync.status}' 2>/dev/null || echo "ArgoCD sync status not available"
+      echo ""
+      
+      echo "6. Service endpoints..."
+      k3s kubectl get endpoints -n todo-app
+      echo ""
+      
+      echo "For detailed pod logs, run:"
+      echo "k3s kubectl logs -f <pod-name> -n <namespace>"
+      echo ""
+      echo "For ArgoCD app details:"
+      echo "k3s kubectl describe application todo-app -n argocd"
+    dest: /home/{{ ansible_user }}/troubleshoot.sh
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'

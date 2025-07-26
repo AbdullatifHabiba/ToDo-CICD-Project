@@ -1,0 +1,77 @@
+---
+- name: Create ArgoCD namespace
+  shell: k3s kubectl create namespace argocd --dry-run=client -o yaml | k3s kubectl apply -f -
+  become: yes
+  register: argocd_namespace_result
+
+- name: Display ArgoCD namespace result
+  debug:
+    var: argocd_namespace_result.stdout_lines
+
+- name: Install ArgoCD
+  shell: k3s kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  become: yes
+  register: argocd_install_result
+
+- name: Display ArgoCD installation progress
+  debug:
+    msg: "ArgoCD installation initiated. This may take several minutes..."
+
+- name: Wait for ArgoCD to be ready (this may take several minutes)
+  shell: k3s kubectl wait --for=condition=ready pod --all -n argocd --timeout=900s
+  become: yes
+  register: argocd_wait_result
+  failed_when: false
+
+- name: Check ArgoCD pod status if wait failed
+  shell: k3s kubectl get pods -n argocd
+  become: yes
+  register: argocd_pod_status
+  when: argocd_wait_result.rc != 0
+
+- name: Display ArgoCD pod status
+  debug:
+    var: argocd_pod_status.stdout_lines
+  when: argocd_wait_result.rc != 0
+
+- name: Get ArgoCD admin password
+  shell: k3s kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+  register: argocd_password
+  become: yes
+  retries: 5
+  delay: 30
+  until: argocd_password.rc == 0
+
+- name: Display ArgoCD admin password
+  debug:
+    msg: "ArgoCD admin password: {{ argocd_password.stdout }}"
+
+
+- name: Apply ArgoCD Application
+  shell: k3s kubectl apply -f /home/{{ ansible_user }}/k8s-manifests/argocd.yml
+  become: yes
+  register: argocd_app_result
+
+- name: Display ArgoCD Application result
+  debug:
+    var: argocd_app_result.stdout_lines
+
+- name: Wait for ArgoCD Application to sync
+  shell: k3s kubectl get application todo-app -n argocd -o jsonpath='{.status.sync.status}'
+  become: yes
+  register: argocd_sync_status
+  until: argocd_sync_status.stdout == "Synced"
+  retries: 10
+  delay: 30
+  failed_when: false
+
+- name: Get ArgoCD Application status if sync failed
+  shell: k3s kubectl get application todo-app -n argocd -o yaml
+  become: yes
+  register: argocd_app_status
+  when: argocd_sync_status.rc != 0
+
+- name: Display ArgoCD Application status
+  debug:
+    var: argocd_app_status.stdout_lines
+  when: argocd_sync_status.rc != 0

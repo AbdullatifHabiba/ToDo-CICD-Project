@@ -1,0 +1,8 @@
+---
+- include_tasks: install-k3s.yml
+- include_tasks: setup-manifests.yml
+- include_tasks: deploy-mongodb.yml
+- include_tasks: deploy-todo-app.yml
+- include_tasks: install-argocd.yml
+- include_tasks: create-scripts.yml
+- include_tasks: display-status.yml

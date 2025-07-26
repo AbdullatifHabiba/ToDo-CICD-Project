@@ -1,0 +1,64 @@
+---
+- name: Get final cluster status
+  shell: k3s kubectl get pods --all-namespaces
+  register: cluster_status
+  become: yes
+
+- name: Display cluster status
+  debug:
+    var: cluster_status.stdout_lines
+
+- name: Get todo-app services
+  shell: k3s kubectl get svc -n todo-app
+  register: todo_services
+  become: yes
+
+- name: Display todo-app services
+  debug:
+    var: todo_services.stdout_lines
+
+- name: Get ArgoCD services
+  shell: k3s kubectl get svc -n argocd
+  register: argocd_services
+  become: yes
+
+- name: Display ArgoCD services
+  debug:
+    var: argocd_services.stdout_lines
+
+- name: Display deployment summary
+  debug:
+    msg: |
+      🚀 KUBERNETES DEPLOYMENT COMPLETED!
+      ====================================
+      
+      📊 Cluster Info:
+      - K3s installed and running
+      - Namespace: todo-app created
+      - MongoDB StatefulSet deployed
+      - Todo App Deployment (2 replicas) deployed
+      - ArgoCD installed and configured
+      
+      🔐 ArgoCD Access:
+      - URL: https://{{ ansible_host }}:8080
+      - Username: admin
+      - Password: {{ argocd_password.stdout }}
+      
+      🌐 Application Access:
+      - Todo App: http://{{ ansible_host }}:3000
+      
+      📝 Management Scripts (available on the server):
+      - ./k8s-status.sh - Check cluster status
+      - ./argocd-access.sh - Access ArgoCD UI
+      - ./todo-app-access.sh - Access Todo App
+      - ./troubleshoot.sh - Troubleshooting help
+      
+      🔄 GitOps Workflow:
+      ArgoCD is now monitoring your Git repository for changes.
+      Any updates to k8s/ manifests will be automatically deployed!
+      
+      🎉 Next Steps:
+      1. SSH to {{ ansible_host }}
+      2. Run ./k8s-status.sh to check everything
+      3. Run ./argocd-access.sh to access ArgoCD
+      4. Run ./todo-app-access.sh to access your application

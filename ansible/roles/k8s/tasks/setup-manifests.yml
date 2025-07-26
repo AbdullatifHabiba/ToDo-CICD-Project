@@ -1,0 +1,42 @@
+---
+- name: Create k8s manifests directory on remote
+  file:
+    path: /home/{{ ansible_user }}/k8s-manifests
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Copy k8s manifests from local to remote
+  copy:
+    src: "{{ k8s_dir }}"
+    dest: /home/{{ ansible_user }}/k8s-manifests/
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: List copied k8s manifests
+  shell: ls -la /home/{{ ansible_user }}/k8s-manifests/
+  register: manifest_files
+
+- name: Display copied manifest files
+  debug:
+    var: manifest_files.stdout_lines
+
+- name: Apply namespace
+  shell: k3s kubectl apply -f /home/{{ ansible_user }}/k8s-manifests/namespace.yml
+  become: yes
+  register: namespace_result
+
+- name: Display namespace creation result
+  debug:
+    var: namespace_result.stdout_lines
+
+- name: Apply secrets
+  shell: k3s kubectl apply -f /home/{{ ansible_user }}/k8s-manifests/secret.yml
+  become: yes
+  register: secrets_result
+
+- name: Display secrets creation result
+  debug:
+    var: secrets_result.stdout_lines
