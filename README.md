@@ -1,109 +1,637 @@
+# Todo List Application - DevOps Implementation with Dual Deployment Strategies
 
-## Documentation
+A comprehensive DevOps project showcasing modern deployment strategies and automation practices using a Node.js Todo application. This project demonstrates two distinct deployment approaches: **Docker Compose with Ansible** for streamlined VM deployment and **Kubernetes with GitOps** for production-grade container orchestration.
 
-[Documentation](https://linktodocumentation)
+## 📋 Table of Contents
 
-📝 To-Do List nodeJs
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [DevOps Features](#devops-features)
+- [Prerequisites](#prerequisites)
+- [Project Structure](#project-structure)
+- [Deployment Strategies](#deployment-strategies)
+  - [Strategy 1: Docker Compose + Ansible (VM Deployment)](#strategy-1-docker-compose--ansible-vm-deployment)
+  - [Strategy 2: Kubernetes + GitOps (Container Orchestration)](#strategy-2-kubernetes--gitops-container-orchestration)
+- [Infrastructure Setup](#infrastructure-setup)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Configuration Management](#configuration-management)
+- [Monitoring and Operations](#monitoring-and-operations)
+- [GitOps Workflow](#gitops-workflow)
+- [Security Implementation](#security-implementation)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
 
-The to-do list application is a web-based application that allows users to create and manage a list of tasks. The user interface consists of a form to add new tasks, a list of all tasks, and controls to mark tasks as complete or delete them.
+## Overview
 
-To create the application, Node.js is used to set up the server and handle the logic of the application. Express.js is used to create the routes for the application, allowing the user to interact with the application through a web browser. EJS is used to create the views for the application, allowing the user to see the list of tasks and the form to add new tasks. CSS is used to style the application, making it visually appealing and easy to use.
+This project demonstrates enterprise-grade DevOps practices through two complementary deployment strategies, showcasing different aspects of modern infrastructure management and automation.
 
-MongoDB and Mongoose are used to store the tasks in a database, allowing the user to add, delete, and update tasks as needed. Nodemon is used to monitor changes to the code and automatically restart the server, making it easy to develop and test the application.
+**Base Application**: [Todo-List-nodejs](https://github.com/Ankit6098/Todo-List-nodejs) - A Node.js application with MongoDB backend.
 
-When the user adds a new task using the form, Node.js and Express.js handle the request and store the task in the database using Mongoose. When the user views the list of tasks, EJS displays the tasks from the database in a list on the web page. When the user marks a task as complete or deletes a task, Node.js and Express.js handle the request and update the database using Mongoose.
+### DevOps Implementation Highlights
+- 🚀 **Dual Deployment Strategies** for different use cases
+- 🤖 **Full Infrastructure Automation** with Ansible
+- 🔄 **GitOps Continuous Deployment** with ArgoCD
+- 🐳 **Containerization** with Docker and multi-arch builds
+- ☸️ **Kubernetes Orchestration** with K3s
+- 🔒 **Security-First Approach** with vulnerability scanning
+- 📊 **Comprehensive Monitoring** and health checks
+- 🛠️ **Infrastructure as Code** principles
 
-Overall, the todo list application using Node.js, Express.js, EJS, CSS, JavaScript, MongoDB, Mongoose, and Nodemon can be a great way to create a functional and interactive web application that allows users to manage their tasks online. With the right combination of technologies, it is possible to create an application that is both functional and aesthetically pleasing, making it easy for users to manage their tasks in a convenient and efficient way.
+## Architecture
 
-Technologies Used: NodeJS, ExpressJS, EJS, CSS, JavaScript, Nodemon, MongoDB, Mongoose.
-## Demo
+### Strategy 1: Docker Compose + Watchtower (Auto-update)
+ ![cicd-pipeline](./cicd1.gif)
 
-Under process...
-## Authors
+### Strategy 2: Kubernetes + GitOps
+![kubernetes-architecture](./cicd2.gif)
 
-- [@AnkitVishwakarma](https://github.com/Ankit6098)
+## DevOps Features
 
+### Infrastructure Automation
+- ✅ **Ansible Playbooks** for complete infrastructure setup
+- ✅ **VM Provisioning** and configuration management
+- ✅ **Service Discovery** and load balancing
+- ✅ **Automated Health Checks** and validation
 
-## Features
+### Container Orchestration
+- ✅ **Kubernetes (K3s)** lightweight cluster setup
+- ✅ **Multi-Architecture Builds** (AMD64/ARM64)
+- ✅ **StatefulSets** for database persistence
+- ✅ **Horizontal Pod Autoscaling** capabilities
 
-- Create, Update, and Delete Tasks: Enable users to create new tasks, update existing tasks (e.g., mark as completed, edit task details), and delete tasks they no longer need.
-- Task Categories provides Implement the ability for users to categorize their tasks into different categories (e.g., work, personal, shopping) or assign labels/tags to tasks for better organization and filtering.
-- MongoDb to store your the user data
-## Run Locally
+### CI/CD Pipeline
+- ✅ **GitHub Actions** workflow automation
+- ✅ **Security Scanning** with Trivy
+- ✅ **Semantic Versioning** and image tagging
+- ✅ **Automated Testing** and quality gates
 
-Clone the project
+### GitOps Implementation
+- ✅ **ArgoCD** for declarative deployments
+- ✅ **Git-based Configuration** management
+- ✅ **Drift Detection** and self-healing
+- ✅ **Rollback Strategies** and deployment history
 
+## Prerequisites
+
+### System Requirements
+- **Host Machine**: Linux/macOS with 16GB+ RAM
+- **Virtualization**: KVM/QEMU or VMware
+- **VM Resources**: 4GB RAM, 2 vCPUs, 20GB disk
+
+### Required Tools
 ```bash
-  git clone https://github.com/Ankit6098/Todos-nodejs
+# Infrastructure Tools
+- Ansible (4.0+)
+- Docker (20.10+)
+- Docker Compose (2.0+)
+- Git
+- SSH client
+
+# Cloud Accounts
+- GitHub account
+- Docker Hub account
 ```
 
-Go to the project directory and open index.html file
+### Skills Prerequisites
+- Basic Linux administration
+- Docker containerization concepts
+- Kubernetes fundamentals
+- Git version control
+- YAML configuration
 
-```bash
-  cd Todos-nodejs
+## Project Structure
+
+```
+Todo-List-nodejs/
+├── ansible/                      # Infrastructure automation
+│   ├── inventory/                # VM inventory management
+│   │   └── hosts.yml             # Target hosts configuration
+│   ├── roles/                    # Ansible roles
+│   │   ├── docker/               # Docker Compose deployment
+│   │   │   └── tasks/main.yml    # Docker setup tasks
+│   │   └── k8s/                  # Kubernetes deployment
+│   │       └── tasks/            # K8s setup tasks
+│   ├── site.yml                  # Docker Compose playbook
+│   └── site-k8s.yml             # Kubernetes playbook
+configuration
+├── .github/workflows/            # CI/CD automation
+│   └── ci.yml                    # Multi-strategy pipeline
+├── docker-compose.yml            # Container orchestration
+├── Dockerfile                    # Container definition
+└── README.md                     # This documentation
 ```
 
-Install the packages
+## Deployment Strategies
 
+## Strategy 1: Docker Compose + Ansible (VM Deployment)
+
+**Use Case**: Traditional VM-based deployments, development environments, hybrid cloud scenarios.
+
+### Key Benefits
+- 🎯 **Simplified Operations** - Single VM management
+- 🔧 **Easy Debugging** - Direct access to containers
+- 💰 **Cost Effective** - Lower resource overhead
+- 🚀 **Rapid Deployment** - Quick setup and teardown
+
+### Infrastructure Setup
+
+1. **Prepare VM Infrastructure**
+   ```bash
+   # Create Ubuntu VM (20.04 LTS recommended)
+   # Ensure SSH access and sudo privileges
+   # Update Ansible inventory with VM details
+   ```
+
+2. **Configure Ansible Inventory**
+   ```yaml
+   # ansible/inventory/hosts.yml
+   webservers:
+     hosts:
+       todo-vm:
+         ansible_host: 192.168.1.100  # Your VM IP
+         ansible_user: ubuntu
+         ansible_ssh_private_key_file: ~/.ssh/id_rsa
+   ```
+
+3. **Execute Docker Compose Deployment**
+   ```bash
+   cd ansible/
+   
+   # Deploy complete stack
+   ansible-playbook site.yml -v --ask-become-pass
+   
+   # Verify deployment
+   ansible webservers -m shell -a "docker ps"
+   ```
+
+### What Gets Deployed
+- ✅ Docker and Docker Compose installation
+- ✅ Application and MongoDB containers
+- ✅ Network configuration and service discovery
+- ✅ Health checks and monitoring setup
+- ✅ Automated service startup and recovery
+
+### Post-Deployment Verification
 ```bash
-  npm install / npm i
+# Check service status
+curl http://vm-ip:3000/health
+
+# View container logs
+ssh ubuntu@vm-ip
+docker-compose logs -f
 ```
 
-Start the Server
+## Strategy 2: Kubernetes + GitOps (Container Orchestration)
+
+**Use Case**: Production environments, microservices architecture, cloud-native applications.
+
+### Key Benefits
+- 🔄 **GitOps Automation** - Declarative deployments
+- 📈 **Auto-Scaling** - Horizontal pod autoscaling
+- 🛡️ **High Availability** - Multi-replica deployments
+- 🔒 **Enterprise Security** - RBAC and network policies
+
+### Infrastructure Setup
+
+1. **Deploy Kubernetes Cluster**
+   ```bash
+   cd ansible/
+   
+   # Update inventory for K8s deployment
+   vim inventory/hosts.yml
+   
+   # Deploy complete K8s stack with ArgoCD
+   ansible-playbook site-k8s.yml -v --ask-become-pass
+   ```
+
+2. **Configure GitHub Secrets**
+   
+   Repository Settings → Secrets and Variables → Actions:
+   
+   ```bash
+   DOCKER_USERNAME=your-dockerhub-username
+   DOCKER_PASSWORD=your-dockerhub-token
+   PAT_TOKEN=your-github-pat
+   ```
+
+3. **Trigger GitOps Pipeline**
+   <!-- use different repo for manifests -->
+  # Manifest repository
+  repository: [AbdullatifHabiba/todo-k8s-manifests](https://github.com/AbdullatifHabiba/todo-k8s-manifests)
+   ```bash
+   # Any push to main branch triggers full pipeline
+   git add .
+   git commit -m "feat: deploy to production"
+   git push origin main
+   ```
+
+### What Gets Deployed
+- ✅ K3s Kubernetes cluster
+- ✅ MongoDB StatefulSet with persistent storage
+- ✅ Todo application Deployment with replicas
+- ✅ ArgoCD GitOps controller
+- ✅ Ingress controller and networking
+- ✅ Monitoring and management tools
+
+### GitOps Workflow Automation
+```bash
+# Monitor deployment progress
+ssh ubuntu@vm-ip
+./k8s-status.sh
+
+# Access ArgoCD dashboard
+./argocd-access.sh
+
+# Access application
+./todo-app-access.sh
+```
+
+## Infrastructure Setup
+
+### VM Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| **Memory** | 2GB | 4GB+ |
+| **CPU** | 1 vCPU | 2+ vCPUs |
+| **Storage** | 10GB | 20GB+ |
+| **OS** | Ubuntu 20.04+ | Ubuntu 22.04 LTS |
+
+### Network Configuration
+```bash
+# Ensure required ports are accessible
+- 22    (SSH)
+- 4000  (Application)
+- 8080  (ArgoCD - K8s only)
+```
+
+### VM Provisioning Script
+```bash
+#!/bin/bash
+# Basic VM setup script
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl wget git vim
+sudo usermod -aG sudo $USER
+
+# Configure SSH key access
+mkdir -p ~/.ssh
+# Add your public key to ~/.ssh/authorized_keys
+```
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+The pipeline supports both deployment strategies:
+
+
+### Pipeline Features
+- 🔍 **Automated Security Scanning** with Trivy
+- 🏗️ **Multi-Architecture Builds** for AMD64/ARM64
+- 🏷️ **Semantic Image Tagging** with Git SHA
+- 🔄 **Conditional Deployment** based on commit messages
+- 📊 **Deployment Status Reporting**
+
+### Image Tagging Strategy
+```bash
+# Generated tags for each build:
+abdullatifhabiba/todo-nodejs:latest           # Latest main branch
+abdullatifhabiba/todo-nodejs:main-a1b2c3d     # Git commit SHA
+abdullatifhabiba/todo-nodejs:v1.0.0           # Release tags
+```
+
+## Configuration Management
+
+### Environment Configuration
+
+#### Docker Compose Strategy
+```yaml
+# docker-compose.yml environment variables
+environment:
+  - NODE_ENV=production
+  - mongoDbUrl=mongodb://admin:secretpassword@mongodb:27017/todolist?authSource=admin
+```
+
+#### Kubernetes Strategy
+```yaml
+# k8s/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+  namespace: todo-app
+type: Opaque
+data:
+  mongodb-uri: bW9uZ29kYjovL2FkbWluOnNlY3JldHBhc3N3b3JkQG1vbmdvZGI6MjcwMTcvdG9kb2xpc3Q=
+```
+
+### Ansible Variables
+```yaml
+# ansible/group_vars/all.yml
+app_name: todo-nodejs
+docker_image: abdullatifhabiba/todo-nodejs
+mongodb_root_password: secretpassword
+deployment_strategy: docker-compose  # or kubernetes
+```
+
+## Monitoring and Operations
+
+### Health Monitoring
+
+#### Application Health Checks
+```bash
+# Built-in health endpoint
+curl http://vm-ip:3000/health
+
+# Container health status
+docker-compose ps  # Docker Compose
+kubectl get pods -n todo-app  # Kubernetes
+```
+
+#### Infrastructure Monitoring
+```bash
+# System resource monitoring
+htop
+df -h
+docker system df
+
+# Kubernetes cluster monitoring
+kubectl top nodes
+kubectl top pods -n todo-app
+```
+
+### Log Management
+
+#### Docker Compose Logs
+```bash
+# Application logs
+docker-compose logs -f todo-app
+
+# Database logs  
+docker-compose logs -f mongodb
+
+# All services
+docker-compose logs -f
+```
+
+#### Kubernetes Logs
+```bash
+# Application logs
+kubectl logs -f deployment/todo-app -n todo-app
+
+# Database logs
+kubectl logs -f statefulset/mongodb -n todo-app
+
+# ArgoCD logs
+kubectl logs -f deployment/argocd-application-controller -n argocd
+```
+
+### Operational Scripts
+
+After deployment, these management scripts are available:
 
 ```bash
-    npm start / nodemon start
+# Kubernetes deployment
+./k8s-status.sh           # Cluster overview
+./argocd-access.sh        # ArgoCD dashboard access
+./todo-app-access.sh      # Application access
+
 ```
-## Acknowledgements
-
- - [nodemon](https://nodemon.io/)
- - [mongoDb](https://www.mongodb.com/)
- - [mongoose](https://mongoosejs.com/)
 
 
-## Screenshots
+## Security Implementation
 
-![225232515-4c100b6b-52e4-40f8-a6d4-85e30dc2f5e7](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/487f548f-7ca6-4183-9443-c88c9f79c3f0)
-![225232960-da554f1f-ba4a-41f8-9856-edaebe339d76](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/25515d2e-1d72-498d-8044-59a01c6b9127)
-![225238829-05433362-5b16-454c-92d5-5e536fe6912e](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/316d15ca-1fe8-4581-80b1-fc316340bba6)
-![225239140-226f8eae-d8b8-4055-8a68-d85d523c2422](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/44a0c418-449e-446f-8a8e-3c4e14fca8bf)
-![225239221-caf86f3d-ef17-4d18-80a6-c72123ff5444](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/2ee90ab0-95d4-44f4-80ac-b17b088ac1ce)
-![225239406-98b7ba7d-df97-4d27-bb66-596a32187d87](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/960ff353-1ce9-4ef8-94e4-10af09184fd2)
-![225239841-4b5d77f0-4a54-4339-b6b3-b6a1be6776b5](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/f5ffc3b8-480f-4d11-9a0b-c469e3c17e8e)
+### Container Security
+- 🔒 **Multi-stage Docker builds** minimize attack surface
+- 🔍 **Trivy vulnerability scanning** in CI pipeline
+- 👤 **Non-root container execution**
+- 📦 **Distroless base images** for production
 
+### Kubernetes Security
+- 🛡️ **RBAC policies** for access control
+- 🔐 **Secrets management** for sensitive data
+- 🌐 **Network policies** for pod isolation
+- 🔒 **Security contexts** for containers
 
-## Related
+### Infrastructure Security
+```yaml
+# Security hardening checklist
+- SSH key-based authentication
+- Firewall configuration (UFW)
+- Regular security updates
+- Container registry scanning
+- Encrypted data at rest
+```
 
-Here are some other projects
+### Security Scanning Pipeline
+```bash
+# Automated security checks
+- Container vulnerability scan (Trivy)
+- Dependency vulnerability check
+- Infrastructure compliance scan
+- Secrets detection (git-secrets)
+```
 
-[Alarm CLock - javascript](https://github.com/Ankit6098/Todos-nodejs)\
-[IMDb Clone - javascript](https://github.com/Ankit6098/IMDb-Clone)
+## Troubleshooting
 
+### Common Issues and Solutions
 
-## 🚀 About Me
-I'm a full stack developer...
+#### Docker Compose Strategy
 
+**Issue**: Containers fail to start
+```bash
+# Diagnosis
+docker-compose ps
+docker-compose logs
 
-# Hi, I'm Ankit! 👋
+# Common fixes
+docker-compose down -v
+docker-compose up -d --build
 
-I'm a full stack developer 😎 ... Love to Develop Classic Unique fascinating and Eye Catching UI and Love to Create Projects and Building logics.
-## 🔗 Links
-[![portfolio](https://img.shields.io/badge/my_portfolio-000?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ankithub.me/Resume/)
+# Check port conflicts
+netstat -tulpn | grep :3000
+```
 
-[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColorwhite=)](https://www.linkedin.com/in/ankit-vishwakarma-6531221b0/)
+**Issue**: Database connection failures
+```bash
+# Check MongoDB status
+docker-compose exec mongodb mongosh --eval "db.adminCommand('ismaster')"
 
+# Verify network connectivity
+docker-compose exec todo-app nc -zv mongodb 27017
 
-## Other Common Github Profile Sections
-🧠 I'm currently learning FullStack Developer Course from Coding Ninjas
+# Check environment variables
+docker-compose exec todo-app env | grep mongo
+```
 
-📫 How to reach me ankitvis609@gmail.com
+#### Kubernetes Strategy
 
+**Issue**: Pods stuck in Pending state
+```bash
+# Check node resources
+kubectl describe nodes
 
-## 🛠 Skills
-React, Java, Javascript, HTML, CSS, Nodejs, ExpressJs, Mongodb, Mongoose...
+# Check resource quotas
+kubectl describe resourcequota -n todo-app
 
+# Check pod events
+kubectl describe pod <pod-name> -n todo-app
+```
 
-## Feedback
+**Issue**: ArgoCD sync failures
+```bash
+# Check application status
+kubectl get application todo-app -n argocd -o yaml
 
-If you have any feedback, please reach out to us at ankitvis609@gmail.com
+# Manual sync
+kubectl patch application todo-app -n argocd \
+  --type merge -p '{"spec":{"syncPolicy":{"syncOptions":["Prune=true"]}}}'
 
+# Check repository access
+kubectl logs deployment/argocd-repo-server -n argocd
+```
+
+**Issue**: Image pull errors
+```bash
+# Check image tag exists
+docker pull abdullatifhabiba/todo-nodejs:main-abc123
+
+# Verify secrets
+kubectl get secret -n todo-app
+kubectl describe secret app-secret -n todo-app
+```
+
+### Diagnostic Commands
+
+#### System Diagnostics
+```bash
+# Resource usage
+free -h
+df -h
+docker system df
+
+# Network connectivity
+ping -c 3 8.8.8.8
+curl -I https://hub.docker.com
+
+# Service status
+systemctl status docker
+systemctl status k3s  # Kubernetes only
+```
+
+#### Application Diagnostics
+```bash
+# Health checks
+curl -f http://localhost:3000/health
+
+# Database connectivity
+mongosh mongodb://admin:password@localhost:27017/admin
+
+# Container inspection
+docker inspect <container_id>
+kubectl describe pod <pod_name> -n todo-app
+```
+
+### Recovery Procedures
+
+#### Docker Compose Recovery
+```bash
+# Complete stack restart
+docker-compose down
+docker-compose up -d
+
+# Data recovery
+docker-compose down
+docker volume ls
+docker-compose up -d
+```
+
+#### Kubernetes Recovery
+```bash
+# Rollback deployment
+kubectl rollout undo deployment/todo-app -n todo-app
+
+# Restart pods
+kubectl rollout restart deployment/todo-app -n todo-app
+
+# Emergency pod deletion
+kubectl delete pod <pod-name> -n todo-app --force
+```
+
+## Contributing
+
+### Development Workflow
+
+1. **Fork and Clone**
+   ```bash
+   git clone https://github.com/your-username/Todo-List-nodejs.git
+   cd Todo-List-nodejs
+   ```
+
+2. **Create Feature Branch**
+   ```bash
+   git checkout -b feature/devops-enhancement
+   ```
+
+3. **Test Changes**
+   ```bash
+   # Test Docker Compose approach
+   docker-compose up -d
+   
+   # Test Kubernetes approach (requires VM)
+   cd ansible/
+   ansible-playbook site-k8s.yml --check
+   ```
+
+4. **Submit Changes**
+   ```bash
+   git add .
+   git commit -m "feat: enhance monitoring capabilities"
+   git push origin feature/devops-enhancement
+   ```
+
+### DevOps Contribution Areas
+- 🔧 **Infrastructure Automation** improvements
+- 📊 **Monitoring and Observability** enhancements
+- 🔒 **Security** hardening measures
+- 🚀 **Performance** optimizations
+- 📚 **Documentation** updates
+
+### Code Standards
+- **Ansible**: Follow YAML best practices and use meaningful task names
+- **Docker**: Multi-stage builds and security best practices
+- **Kubernetes**: Follow K8s resource naming conventions
+- **CI/CD**: Implement proper error handling and logging
+
+---
+
+## 🎯 Project Outcomes
+
+This project demonstrates mastery of:
+
+- **🏗️ Infrastructure as Code** with Ansible automation
+- **🐳 Containerization** with Docker and multi-arch builds  
+- **☸️ Kubernetes Orchestration** with production-ready configurations
+- **🔄 GitOps Methodology** with ArgoCD continuous deployment
+- **🤖 CI/CD Automation** with GitHub Actions
+- **🔒 Security-First Approach** with vulnerability scanning
+- **📊 Monitoring and Operations** with comprehensive tooling
+
+### Deployment Strategy Comparison
+
+| Aspect | Docker Compose + Ansible | Kubernetes + GitOps |
+|--------|--------------------------|-------------------|
+| **Complexity** | Low-Medium | Medium-High |
+| **Scalability** | Limited | Excellent |
+| **Automation** | High | Very High |
+| **Resource Usage** | Lower | Higher |
+| **Production Ready** | Good | Excellent |
+| **Learning Curve** | Gentle | Steep |
+
+Choose the strategy that aligns with your requirements:
+- **Docker Compose**: Development, testing, simple production deployments
+- **Kubernetes**: Enterprise production, microservices, cloud-native applications
+
+**Happy DevOps Engineering! 🚀**
+
+For questions or contributions, visit the [GitHub repository](https://github.com/AbdullatifHabiba/Todo-List-nodejs).
