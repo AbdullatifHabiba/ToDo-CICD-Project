@@ -1,6 +1,6 @@
 ---
 - name: Deploy Todo Application on Kubernetes with ArgoCD
-  hosts: webservers
+  hosts: k8s_servers
   become: yes
   gather_facts: yes
   

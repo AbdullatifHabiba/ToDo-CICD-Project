@@ -1,6 +1,6 @@
 ---
 - name: Deploy Todo Application
-  hosts: webservers
+  hosts: docker_compose_servers
   become: yes
   gather_facts: yes
   
