@@ -1,0 +1,18 @@
+# Application Configuration
+app_name: todo-nodejs
+app_port: 4000
+docker_image: abdullatifhabiba/todo-nodejs:latest
+
+# Docker Configuration
+docker_compose_version: "2.21.0"
+docker_networks:
+  - todo-network
+
+# MongoDB Configuration
+mongodb_version: "6.0"
+mongodb_port: 27017
+mongodb_data_path: /opt/mongodb/data
+
+# Monitoring
+enable_monitoring: true
+log_retention_days: 7

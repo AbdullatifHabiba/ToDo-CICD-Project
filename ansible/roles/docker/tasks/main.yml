@@ -1,0 +1,179 @@
+---
+- name: Install required packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - python3-pip
+      - python3-docker
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Create keyrings directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: yes
+
+# Fix the GPG key import
+- name: Download Docker GPG key
+  get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /tmp/docker.gpg
+    mode: '0644'
+  become: yes
+
+- name: Add Docker GPG key to keyring
+  shell: |
+    gpg --dearmor < /tmp/docker.gpg > /etc/apt/keyrings/docker.gpg
+    chmod 644 /etc/apt/keyrings/docker.gpg
+  become: yes
+
+- name: Remove temporary GPG file
+  file:
+    path: /tmp/docker.gpg
+    state: absent
+  become: yes
+
+- name: Add Docker repository
+  apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+    update_cache: yes
+  become: yes
+
+# Rest of your tasks remain the same...
+- name: Install Docker CE
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Install Docker SDK for Python
+  pip:
+    name:
+      - docker
+      - docker-compose
+    state: present
+  become: yes
+
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+  become: yes
+
+- name: Start and enable Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Create application directory
+  file:
+    path: /opt/{{ app_name }}
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  become: yes
+
+- name: Create SSL directory for nginx
+  file:
+    path: /opt/{{ app_name }}/ssl
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  become: yes
+
+- name: Copy docker-compose.yml
+  copy:
+    src: "{{ playbook_dir }}/../docker-compose.yml"
+    dest: /opt/{{ app_name }}/docker-compose.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Copy .env file
+  copy:
+    src: "{{ playbook_dir }}/../.env"
+    dest: /opt/{{ app_name }}/.env
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0600'
+
+- name: Copy nginx configuration
+  copy:
+    src: "{{ playbook_dir }}/../nginx.conf"
+    dest: /opt/{{ app_name }}/nginx.conf
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Copy mongo init script
+  copy:
+    src: "{{ playbook_dir }}/../mongo-init.js"
+    dest: /opt/{{ app_name }}/mongo-init.js
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Reset SSH connection to pick up docker group
+  meta: reset_connection
+
+- name: Pull Docker images
+  shell: docker compose pull
+  args:
+    chdir: /opt/{{ app_name }}
+  become_user: "{{ ansible_user }}"
+
+- name: Start Docker Compose services
+  shell: docker compose up -d
+  args:
+    chdir: /opt/{{ app_name }}
+  become_user: "{{ ansible_user }}"
+
+- name: Wait for services to be ready
+  pause:
+    seconds: 60
+
+- name: Check Docker containers status
+  shell: docker compose ps
+  args:
+    chdir: /opt/{{ app_name }}
+  register: container_status
+  become_user: "{{ ansible_user }}"
+
+- name: Display container status
+  debug:
+    var: container_status.stdout_lines
+
+- name: Check if application is running
+  uri:
+    url: "http://{{ ansible_host }}/health"
+    method: GET
+    status_code: 200
+  register: app_status
+  retries: 15
+  delay: 10
+  until: app_status.status == 200
+  ignore_errors: yes
+  delegate_to: localhost
+
+- name: Display application status
+  debug:
+    msg: "Application is {{ 'running' if app_status.status == 200 else 'not responding' }}"

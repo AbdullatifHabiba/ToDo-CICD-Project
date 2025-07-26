@@ -1,0 +1,24 @@
+---
+- name: Deploy Todo Application
+  hosts: webservers
+  become: yes
+  gather_facts: yes
+  
+  roles:
+    - docker
+
+  post_tasks:
+    - name: Wait for application to be ready
+      uri:
+        url: "http://{{ ansible_host }}/health"
+        method: GET
+        status_code: 200
+      register: app_health
+      until: app_health.status == 200
+      retries: 30
+      delay: 10
+      delegate_to: localhost
+
+    - name: Display application URL
+      debug:
+        msg: "Todo application is running at http://{{ ansible_host }}"
