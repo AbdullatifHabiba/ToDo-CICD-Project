@@ -217,6 +217,10 @@ docker-compose logs -f
 3. **Trigger GitOps Pipeline**
    <!-- use different repo for manifests -->
   # Manifest repository
+  ![argocd-flow](./argocd.gif)
+  
+
+   Example manifest
   repository: [AbdullatifHabiba/todo-k8s-manifests](https://github.com/AbdullatifHabiba/todo-k8s-manifests)
    ```bash
    # Any push to main branch triggers full pipeline
