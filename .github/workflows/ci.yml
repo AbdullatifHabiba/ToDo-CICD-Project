@@ -119,6 +119,6 @@ jobs:
         cd manifests
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add k8s/todo-app.yaml
+        git add k8s/app.yaml
         git commit -m "Update todo-app image to main-${GITHUB_SHA::7}" || exit 0
         git push
