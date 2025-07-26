@@ -108,11 +108,11 @@ jobs:
         fi
         
         # Update the image tag in the deployment
-        sed -i "s|image: abdullatifhabiba/todo-nodejs:.*|image: abdullatifhabiba/todo-nodejs:${NEW_TAG}|g" k8s/app.yaml
+        sed -i "s|image: abdullatifhabiba/todo-nodejs:.*|image: abdullatifhabiba/todo-nodejs:${NEW_TAG}|g" k8s/app.yml
         
         # Verify the change
         echo "Updated image tag to: abdullatifhabiba/todo-nodejs:${NEW_TAG}"
-        cat k8s/todo-app.yaml | grep "image:"
+        cat k8s/app.yml | grep "image:"
     
     - name: Commit and push changes
       run: |
