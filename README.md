@@ -57,8 +57,7 @@ This project demonstrates enterprise-grade DevOps practices through two compleme
 - ✅ **Kubernetes (K3s)** lightweight cluster setup
 - ✅ **Multi-Architecture Builds** (AMD64/ARM64)
 - ✅ **StatefulSets** for database persistence
-- ✅ **Horizontal Pod Autoscaling** capabilities
-
+- ✅ **Ingress Controllers** for traffic management
 ### CI/CD Pipeline
 - ✅ **GitHub Actions** workflow automation
 - ✅ **Security Scanning** with Trivy
@@ -68,8 +67,6 @@ This project demonstrates enterprise-grade DevOps practices through two compleme
 ### GitOps Implementation
 - ✅ **ArgoCD** for declarative deployments
 - ✅ **Git-based Configuration** management
-- ✅ **Drift Detection** and self-healing
-- ✅ **Rollback Strategies** and deployment history
 
 ## Prerequisites
 
@@ -109,16 +106,24 @@ Todo-List-nodejs/
 │   ├── roles/                    # Ansible roles
 │   │   ├── docker/               # Docker Compose deployment
 │   │   │   └── tasks/main.yml    # Docker setup tasks
-│   │   └── k8s/                  # Kubernetes deployment
-│   │       └── tasks/            # K8s setup tasks
+│   │   └── k8s/                  # Kubernetes ansible role
+│   │       ├── tasks/            # K8s setup tasks
+│   │       │   ├── main.yml      # Main K8s tasks
+│   │       │   ├── install-k3s.yml       # K3s installation
+│   │       │   ├── deploy-mongodb.yml    # MongoDB deployment
+│   │       │   ├── deploy-app.yml        # Application deployment
+│   │       │   ├── setup-argocd.yml      # ArgoCD installation
+│   │       │   ├── create-scripts.yml    # Management scripts
+│   │       │   └── setup-manifests.yml   # K8s manifests setup
 │   ├── site.yml                  # Docker Compose playbook
 │   └── site-k8s.yml             # Kubernetes playbook
-configuration
 ├── .github/workflows/            # CI/CD automation
 │   └── ci.yml                    # Multi-strategy pipeline
 ├── docker-compose.yml            # Container orchestration
 ├── Dockerfile                    # Container definition
 └── README.md                     # This documentation
+├── nginx.conf                    # Nginx configuration for reverse proxy
+|── healthcheck.js               # Application health check script
 ```
 
 ## Deployment Strategies
@@ -167,14 +172,23 @@ configuration
 ### What Gets Deployed
 - ✅ Docker and Docker Compose installation
 - ✅ Application and MongoDB containers
-- ✅ Network configuration and service discovery
 - ✅ Health checks and monitoring setup
-- ✅ Automated service startup and recovery
+- ✅ Nginx reverse proxy configuration
+- ✅ Watchtower for auto-updates
+
+   #### Watchtower workflow
+   - Watchtower monitors running containers
+   - Pulls latest images from Docker Hub
+   - Restarts containers with new images
+   - Ensures minimal downtime 
+   - Automatically updates containers without manual intervention
+   - Maintains application availability during updates
+  
 
 ### Post-Deployment Verification
 ```bash
 # Check service status
-curl http://vm-ip:3000/health
+curl http://vm-ip/health
 
 # View container logs
 ssh ubuntu@vm-ip
@@ -183,14 +197,12 @@ docker-compose logs -f
 
 ## Strategy 2: Kubernetes + GitOps (Container Orchestration)
 
-**Use Case**: Production environments, microservices architecture, cloud-native applications.
 
 ### Key Benefits
 - 🔄 **GitOps Automation** - Declarative deployments
-- 📈 **Auto-Scaling** - Horizontal pod autoscaling
 - 🛡️ **High Availability** - Multi-replica deployments
-- 🔒 **Enterprise Security** - RBAC and network policies
-
+- 📈 **Scalability** - Horizontal scaling capabilities
+  
 ### Infrastructure Setup
 
 1. **Deploy Kubernetes Cluster**
@@ -235,8 +247,7 @@ docker-compose logs -f
 - ✅ Todo application Deployment with replicas
 - ✅ ArgoCD GitOps controller
 - ✅ Ingress controller and networking
-- ✅ Monitoring and management tools
-
+- ✅ Health checks 
 ### GitOps Workflow Automation
 ```bash
 # Monitor deployment progress
@@ -335,7 +346,6 @@ data:
 app_name: todo-nodejs
 docker_image: abdullatifhabiba/todo-nodejs
 mongodb_root_password: secretpassword
-deployment_strategy: docker-compose  # or kubernetes
 ```
 
 ## Monitoring and Operations
@@ -345,24 +355,14 @@ deployment_strategy: docker-compose  # or kubernetes
 #### Application Health Checks
 ```bash
 # Built-in health endpoint
-curl http://vm-ip:3000/health
+curl http://vm-ip/health
 
 # Container health status
 docker-compose ps  # Docker Compose
 kubectl get pods -n todo-app  # Kubernetes
 ```
 
-#### Infrastructure Monitoring
-```bash
-# System resource monitoring
-htop
-df -h
-docker system df
 
-# Kubernetes cluster monitoring
-kubectl top nodes
-kubectl top pods -n todo-app
-```
 
 ### Log Management
 
@@ -409,32 +409,12 @@ After deployment, these management scripts are available:
 - 🔒 **Multi-stage Docker builds** minimize attack surface
 - 🔍 **Trivy vulnerability scanning** in CI pipeline
 - 👤 **Non-root container execution**
-- 📦 **Distroless base images** for production
+- 
 
 ### Kubernetes Security
-- 🛡️ **RBAC policies** for access control
 - 🔐 **Secrets management** for sensitive data
-- 🌐 **Network policies** for pod isolation
-- 🔒 **Security contexts** for containers
 
-### Infrastructure Security
-```yaml
-# Security hardening checklist
-- SSH key-based authentication
-- Firewall configuration (UFW)
-- Regular security updates
-- Container registry scanning
-- Encrypted data at rest
-```
 
-### Security Scanning Pipeline
-```bash
-# Automated security checks
-- Container vulnerability scan (Trivy)
-- Dependency vulnerability check
-- Infrastructure compliance scan
-- Secrets detection (git-secrets)
-```
 
 ## Troubleshooting
 
@@ -453,7 +433,7 @@ docker-compose down -v
 docker-compose up -d --build
 
 # Check port conflicts
-netstat -tulpn | grep :3000
+netstat -tulpn | grep :4000
 ```
 
 **Issue**: Database connection failures
@@ -526,7 +506,7 @@ systemctl status k3s  # Kubernetes only
 #### Application Diagnostics
 ```bash
 # Health checks
-curl -f http://localhost:3000/health
+curl -f http://localhost/health
 
 # Database connectivity
 mongosh mongodb://admin:password@localhost:27017/admin
@@ -618,8 +598,6 @@ This project demonstrates mastery of:
 - **☸️ Kubernetes Orchestration** with production-ready configurations
 - **🔄 GitOps Methodology** with ArgoCD continuous deployment
 - **🤖 CI/CD Automation** with GitHub Actions
-- **🔒 Security-First Approach** with vulnerability scanning
-- **📊 Monitoring and Operations** with comprehensive tooling
 
 ### Deployment Strategy Comparison
 
@@ -630,7 +608,6 @@ This project demonstrates mastery of:
 | **Automation** | High | Very High |
 | **Resource Usage** | Lower | Higher |
 | **Production Ready** | Good | Excellent |
-| **Learning Curve** | Gentle | Steep |
 
 Choose the strategy that aligns with your requirements:
 - **Docker Compose**: Development, testing, simple production deployments
