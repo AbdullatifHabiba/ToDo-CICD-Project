@@ -1,0 +1,13 @@
+---
+- name: restart docker
+  systemd:
+    name: docker
+    state: restarted
+  become: yes
+
+- name: cleanup docker
+  shell: |
+    docker system prune -f
+    docker volume prune -f
+  become_user: "{{ ansible_user }}"
+  ignore_errors: yes

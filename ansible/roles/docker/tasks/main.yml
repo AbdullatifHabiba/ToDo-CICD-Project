@@ -47,7 +47,6 @@
     update_cache: yes
   become: yes
 
-# Rest of your tasks remain the same...
 - name: Install Docker CE
   apt:
     name:
@@ -82,28 +81,27 @@
     enabled: yes
   become: yes
 
-- name: Create application directory
+# CHANGED: Use home directory instead of /opt
+- name: Create application directory in home
   file:
-    path: /opt/{{ app_name }}
+    path: "/home/{{ ansible_user }}/{{ app_name }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0755'
-  become: yes
 
 - name: Create SSL directory for nginx
   file:
-    path: /opt/{{ app_name }}/ssl
+    path: "/home/{{ ansible_user }}/{{ app_name }}/ssl"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0755'
-  become: yes
 
 - name: Copy docker-compose.yml
   copy:
     src: "{{ playbook_dir }}/../docker-compose.yml"
-    dest: /opt/{{ app_name }}/docker-compose.yml
+    dest: "/home/{{ ansible_user }}/{{ app_name }}/docker-compose.yml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0644'
@@ -111,7 +109,7 @@
 - name: Copy .env file
   copy:
     src: "{{ playbook_dir }}/../.env"
-    dest: /opt/{{ app_name }}/.env
+    dest: "/home/{{ ansible_user }}/{{ app_name }}/.env"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0600'
@@ -119,7 +117,7 @@
 - name: Copy nginx configuration
   copy:
     src: "{{ playbook_dir }}/../nginx.conf"
-    dest: /opt/{{ app_name }}/nginx.conf
+    dest: "/home/{{ ansible_user }}/{{ app_name }}/nginx.conf"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0644'
@@ -127,7 +125,7 @@
 - name: Copy mongo init script
   copy:
     src: "{{ playbook_dir }}/../mongo-init.js"
-    dest: /opt/{{ app_name }}/mongo-init.js
+    dest: "/home/{{ ansible_user }}/{{ app_name }}/mongo-init.js"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0644'
@@ -138,13 +136,13 @@
 - name: Pull Docker images
   shell: docker compose pull
   args:
-    chdir: /opt/{{ app_name }}
+    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
   become_user: "{{ ansible_user }}"
 
 - name: Start Docker Compose services
   shell: docker compose up -d
   args:
-    chdir: /opt/{{ app_name }}
+    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
   become_user: "{{ ansible_user }}"
 
 - name: Wait for services to be ready
@@ -154,7 +152,7 @@
 - name: Check Docker containers status
   shell: docker compose ps
   args:
-    chdir: /opt/{{ app_name }}
+    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
   register: container_status
   become_user: "{{ ansible_user }}"
 
