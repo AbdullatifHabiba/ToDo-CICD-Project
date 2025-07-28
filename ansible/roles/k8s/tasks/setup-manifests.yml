@@ -25,7 +25,7 @@
 
 - name: Apply namespace
   shell: k3s kubectl apply -f /home/{{ ansible_user }}/k8s-manifests/namespace.yml
-  become: yes
+  become: true
   register: namespace_result
 
 - name: Display namespace creation result
@@ -34,7 +34,7 @@
 
 - name: Apply secrets
   shell: k3s kubectl apply -f /home/{{ ansible_user }}/k8s-manifests/secret.yml
-  become: yes
+  become: true
   register: secrets_result
 
 - name: Display secrets creation result

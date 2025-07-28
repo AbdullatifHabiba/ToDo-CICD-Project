@@ -2,7 +2,7 @@
 - name: Get final cluster status
   shell: k3s kubectl get pods --all-namespaces
   register: cluster_status
-  become: yes
+  become: true
 
 - name: Display cluster status
   debug:
@@ -11,7 +11,7 @@
 - name: Get todo-app services
   shell: k3s kubectl get svc -n todo-app
   register: todo_services
-  become: yes
+  become: true
 
 - name: Display todo-app services
   debug:
@@ -20,7 +20,7 @@
 - name: Get ArgoCD services
   shell: k3s kubectl get svc -n argocd
   register: argocd_services
-  become: yes
+  become: true
 
 - name: Display ArgoCD services
   debug:

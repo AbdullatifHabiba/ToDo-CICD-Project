@@ -1,7 +1,7 @@
 ---
 - name: Apply Todo App Deployment
   shell: k3s kubectl apply -f /home/{{ ansible_user }}/k8s-manifests/app.yml
-  become: yes
+  become: true
   register: todo_app_result
 
 - name: Display Todo App deployment result
@@ -10,13 +10,13 @@
 
 - name: Wait for Todo App Deployment to be ready
   shell: k3s kubectl wait --for=condition=ready pod -l app=todo-app -n todo-app --timeout=300s
-  become: yes
+  become: true
   register: todo_app_wait_result
   failed_when: false
 
 - name: Check Todo App pod status if wait failed
   shell: k3s kubectl get pods -n todo-app -l app=todo-app
-  become: yes
+  become: true
   register: todo_app_pod_status
   when: todo_app_wait_result.rc != 0
 
@@ -27,7 +27,7 @@
 
 - name: Check Todo App logs if pods not ready
   shell: k3s kubectl logs -l app=todo-app -n todo-app --tail=20
-  become: yes
+  become: true
   register: todo_app_logs
   when: todo_app_wait_result.rc != 0
   failed_when: false
@@ -39,7 +39,7 @@
 
 - name: Verify Todo App services
   shell: k3s kubectl get svc,ingress -n todo-app
-  become: yes
+  become: true
   register: todo_app_services
 
 - name: Display Todo App services

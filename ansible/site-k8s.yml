@@ -1,9 +1,9 @@
 ---
 - name: Deploy Todo Application on Kubernetes with ArgoCD
   hosts: k8s_servers
-  become: yes
-  gather_facts: yes
-  
+  become: true
+  gather_facts: true
+
   vars:
     app_name: todo-nodejs
     docker_image: abdullatifhabiba/todo-nodejs:latest

@@ -1,7 +1,7 @@
 ---
 - name: Apply MongoDB StatefulSet
   shell: k3s kubectl apply -f /home/{{ ansible_user }}/k8s-manifests/mongodb.yml
-  become: yes
+  become: true
   register: mongodb_result
 
 - name: Display MongoDB deployment result
@@ -10,13 +10,13 @@
 
 - name: Wait for MongoDB StatefulSet to be ready
   shell: k3s kubectl wait --for=condition=ready pod -l app=mongodb -n todo-app --timeout=300s
-  become: yes
+  become: true
   register: mongodb_wait_result
   failed_when: false
 
 - name: Check MongoDB pod status if wait failed
   shell: k3s kubectl get pods -n todo-app -l app=mongodb
-  become: yes
+  become: true
   register: mongodb_pod_status
   when: mongodb_wait_result.rc != 0
 
@@ -27,7 +27,7 @@
 
 - name: Check MongoDB logs if pods not ready
   shell: k3s kubectl logs -l app=mongodb -n todo-app --tail=20
-  become: yes
+  become: true
   register: mongodb_logs
   when: mongodb_wait_result.rc != 0
   failed_when: false
@@ -39,7 +39,7 @@
 
 - name: Verify MongoDB service
   shell: k3s kubectl get svc mongodb -n todo-app
-  become: yes
+  become: true
   register: mongodb_service
 
 - name: Display MongoDB service status
