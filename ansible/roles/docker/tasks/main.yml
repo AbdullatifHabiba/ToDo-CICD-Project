@@ -133,45 +133,105 @@
 - name: Reset SSH connection to pick up docker group
   meta: reset_connection
 
-- name: Pull Docker images
-  shell: docker compose pull
-  args:
-    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
-  become_user: "{{ ansible_user }}"
+# # Stop existing containers before starting new ones
+# - name: Stop existing Docker Compose services
+#   community.docker.docker_compose_v2:
+#     project_src: "/home/{{ ansible_user }}/{{ app_name }}"
+#     state: absent
+#     remove_orphans: true
+#   become_user: "{{ ansible_user }}"
+#   become: true
+#   ignore_errors: true
+
+# # Prune unused Docker resources (optional but recommended)
+# - name: Prune unused Docker resources
+#   community.docker.docker_prune:
+#     containers: true
+#     images: false
+#     networks: false
+#     volumes: false
+#     builder_cache: false
+#   become_user: "{{ ansible_user }}"
+#   ignore_errors: true
 
 - name: Start Docker Compose services
-  shell: docker compose up -d
-  args:
-    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ ansible_user }}/{{ app_name }}"
+    state: present
+    pull: always
+    recreate: always
   become_user: "{{ ansible_user }}"
 
 - name: Wait for services to be ready
   pause:
     seconds: 60
 
+
+
 - name: Check Docker containers status
-  shell: docker compose ps
-  args:
-    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ ansible_user }}/{{ app_name }}"
+    state: present
   register: container_status
   become_user: "{{ ansible_user }}"
 
-- name: Display container status
+- name: Display Docker Compose task result
   debug:
-    var: container_status.stdout_lines
+    msg: "Docker Compose operation completed with state: {{ container_status.state | default('unknown') }}"
 
-- name: Check if application is running
-  uri:
-    url: "http://{{ ansible_host }}/health"
-    method: GET
-    status_code: 200
-  register: app_status
-  retries: 15
-  delay: 10
-  until: app_status.status == 200
+- name: Get detailed container status
+  shell: |
+    echo "=== CONTAINER STATUS ==="
+    docker compose ps
+    echo ""
+    echo "=== DETAILED STATUS ==="
+    docker compose ps --format 'table {{ "{{.Service}}" }}\t{{ "{{.Status}}" }}\t{{ "{{.Ports}}" }}'
+    echo ""
+    echo "=== RUNNING SERVICES COUNT ==="
+    docker compose ps --services --filter "status=running" | wc -l
+  args:
+    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
+  register: complete_status
+  become_user: "{{ ansible_user }}"
+
+- name: Display complete container information
+  debug:
+    var: complete_status.stdout_lines
+
+- name: Check individual service health
+  shell: |
+    echo "=== SERVICE HEALTH CHECK ==="
+    for service in mongodb todo-app nginx watchtower; do
+      status=$(docker compose ps $service --format '{{ "{{.Status}}" }}' 2>/dev/null || echo "not found")
+      echo "$service: $status"
+    done
+  args:
+    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
+  register: service_health
+  become_user: "{{ ansible_user }}"
+
+- name: Display service health
+  debug:
+    var: service_health.stdout_lines
+
+- name: Verify critical services are running
+  shell: |
+    running_services=$(docker compose ps --services --filter "status=running" | wc -l)
+    total_services=$(docker compose config --services | wc -l)
+    echo "Running: $running_services out of $total_services services"
+    if [ "$running_services" -lt 3 ]; then
+      echo "WARNING: Less than 3 services running"
+      exit 1
+    else
+      echo "SUCCESS: Sufficient services running"
+      exit 0
+    fi
+  args:
+    chdir: "/home/{{ ansible_user }}/{{ app_name }}"
+  register: service_check
+  become_user: "{{ ansible_user }}"
   ignore_errors: true
-  delegate_to: localhost
 
-- name: Display application status
+- name: Display service verification result
   debug:
-    msg: "Application is {{ 'running' if app_status.status == 200 else 'not responding' }}"
+    var: service_check.stdout_lines
